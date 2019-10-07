@@ -21,10 +21,10 @@ resource "aws_security_group" "db_allow_all" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 5432
-    to_port     = 5432
+    from_port   = var.db["port"]
+    to_port     = var.db["port"]
     protocol    = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    cidr_blocks = var.db["allowed_cidr_block"]
   }
 
   egress {
