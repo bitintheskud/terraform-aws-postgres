@@ -12,7 +12,7 @@ locals {
   name_identifier = "${var.project}-${var.identifier}-db-${random_string.this_id.result}"
 
   # Only alphanumeric character in name
-  db_name = "${var.project}${var.identifier}"
+  db_name = "${var.identifier}"
 }
 
 resource "aws_security_group" "db_allow_all" {
@@ -46,6 +46,7 @@ module "db" {
   engine_version    = var.db["engine_version"]
   instance_class    = var.db["instance_class"]
   allocated_storage = var.db["allocated_storage"]
+  max_allocated_storage = var.db["max_allocated_storage"]
   storage_encrypted = var.db["storage_encrypted"]
 
   name = local.db_name
@@ -55,7 +56,7 @@ module "db" {
   password = "${random_string.db_password.result}"
   port     = var.db["port"]
 
-  publicly_accessible = var.publicly_accessible
+  publicly_accessible = var.db["publicly_accessible"]
 
   vpc_security_group_ids = [ "${aws_security_group.db_allow_all.id}" ]
 
