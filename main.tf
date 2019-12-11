@@ -55,7 +55,7 @@ module "db" {
   password = "${random_string.db_password.result}"
   port     = var.db["port"]
 
-  publicly_accessible = true
+  publicly_accessible = var.publicly_accessible
 
   vpc_security_group_ids = [ "${aws_security_group.db_allow_all.id}" ]
 
@@ -89,4 +89,7 @@ module "db" {
 
   # Database Deletion Protection
   deletion_protection = var.db["deletion_protection"]
+
+  # Database parameters 
+  parameters = var.db["parameters"]
 }
