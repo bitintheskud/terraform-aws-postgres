@@ -3,8 +3,8 @@ resource "random_string" "db_password" {
 }
 
 resource "random_string" "this_id" {
-  length = 4
-  upper = false
+  length  = 4
+  upper   = false
   special = false
 }
 
@@ -20,21 +20,34 @@ resource "aws_security_group" "db_allow_all" {
   description = "Allow all traffic to postgres instance"
   vpc_id      = var.vpc_id
 
-  ingress {
-    from_port   = var.db["port"]
-    to_port     = var.db["port"]
-    protocol    = "tcp"
-    cidr_blocks = var.db["allowed_cidr_block"]
-  }
-
   egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    cidr_blocks     = ["0.0.0.0/0"]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
+resource "aws_security_group_rule" "db_allowed_cidr_block" {
+  count             = var.db["allowed_cidr_block"] != [] ? 1 : 0
+  from_port         = var.db["port"]
+  protocol          = "tcp"
+  security_group_id = aws_security_group.db_allow_all.id
+  to_port           = var.db["port"]
+  type              = "ingress"
+  cidr_blocks       = var.db["allowed_cidr_block"]
+}
+
+resource "aws_security_group_rule" "db_allowed_security_group" {
+  for_each = toset(var.db["allowed_security_group"])
+
+  from_port                = 5432
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.db_allow_all.id
+  to_port                  = 5432
+  type                     = "ingress"
+  source_security_group_id = each.key
+}
 
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
@@ -42,12 +55,12 @@ module "db" {
 
   identifier = local.name_identifier
 
-  engine            = "postgres"
-  engine_version    = var.db["engine_version"]
-  instance_class    = var.db["instance_class"]
-  allocated_storage = var.db["allocated_storage"]
+  engine                = "postgres"
+  engine_version        = var.db["engine_version"]
+  instance_class        = var.db["instance_class"]
+  allocated_storage     = var.db["allocated_storage"]
   max_allocated_storage = var.db["max_allocated_storage"]
-  storage_encrypted = var.db["storage_encrypted"]
+  storage_encrypted     = var.db["storage_encrypted"]
 
   name = local.db_name
 
@@ -58,7 +71,7 @@ module "db" {
 
   publicly_accessible = var.db["publicly_accessible"]
 
-  vpc_security_group_ids = [ "${aws_security_group.db_allow_all.id}" ]
+  vpc_security_group_ids = ["${aws_security_group.db_allow_all.id}"]
 
   maintenance_window = var.db["maintenance_window"]
   backup_window      = var.db["backup_windows"]
@@ -69,7 +82,7 @@ module "db" {
   tags = merge(
     var.custom_tags,
     {
-      "Role" = var.identifier,
+      "Role"        = var.identifier,
       "Environment" = var.env
     }
   )
