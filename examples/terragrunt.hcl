@@ -3,7 +3,7 @@ include {
 }
 
 terraform {
-  source = "git::git@github.com:bitintheskud/terraform-aws-postgres.git?ref=v1.0.5"
+  source = "git::git@github.com:bitintheskud/terraform-aws-postgres.git?ref=v1.0.7"
 }
 
 dependency "bastion" {
