@@ -43,3 +43,9 @@ variable "custom_tags" {
   default = {}
   description = "Custom tags to add to all the resource"
 }
+
+variable "apply_immediately" {
+  type = bool
+  default = false
+  description = "Specifies whether any database modifications are applied immediately, or during the next maintenance window"
+}

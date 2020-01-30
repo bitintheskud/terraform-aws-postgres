@@ -106,4 +106,7 @@ module "db" {
 
   # Database parameters 
   parameters = var.db["parameters"]
+  multi_az   = var.db["multi_az_enable"]
+
+  apply_immediately = var.apply_immediately
 }
