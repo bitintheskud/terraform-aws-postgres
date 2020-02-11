@@ -1,3 +1,5 @@
+// To do. readme
+
 resource "random_string" "db_password" {
   length = 16
 }
@@ -112,15 +114,16 @@ module "db" {
 }
 
 resource "aws_db_instance" "replica" {
-  count                  = var.db["replica"]["enable"] ? 1 : 0
-  identifier             = "${local.name_identifier}-replica"
-  instance_class         = var.db["instance_class"]
-  replicate_source_db    = module.db.this_db_instance_id
-  vpc_security_group_ids = ["${aws_security_group.db_allow_all.id}"]
-  allocated_storage      = var.db["allocated_storage"]
-  max_allocated_storage  = var.db["max_allocated_storage"]
-  ca_cert_identifier     = var.db["ca_cert_identifier"]
-  publicly_accessible    = var.db["publicly_accessible"]
-  availability_zone = var.db["replica"]["availability_zone"]
+  count                     = var.db["replica"]["enable"] ? 1 : 0
+  identifier                = "${local.name_identifier}-replica"
+  instance_class            = var.db["instance_class"]
+  replicate_source_db       = module.db.this_db_instance_id
+  vpc_security_group_ids    = [ aws_security_group.db_allow_all.id ]
+  allocated_storage         = var.db["allocated_storage"]
+  max_allocated_storage     = var.db["max_allocated_storage"]
+  ca_cert_identifier        = var.db["ca_cert_identifier"]
+  publicly_accessible       = var.db["publicly_accessible"]
+  availability_zone         = var.db["replica"]["availability_zone"]
   final_snapshot_identifier = "${local.name_identifier}-replica-snapshot"
+  storage_encrypted         = true
 }
