@@ -118,7 +118,7 @@ resource "aws_db_instance" "replica" {
   identifier                = "${local.name_identifier}-replica"
   instance_class            = var.db["instance_class"]
   replicate_source_db       = module.db.this_db_instance_id
-  vpc_security_group_ids    = [ aws_security_group.db_allow_all.id ]
+  vpc_security_group_ids    = [aws_security_group.db_allow_all.id]
   allocated_storage         = var.db["allocated_storage"]
   max_allocated_storage     = var.db["max_allocated_storage"]
   ca_cert_identifier        = var.db["ca_cert_identifier"]
@@ -126,4 +126,21 @@ resource "aws_db_instance" "replica" {
   availability_zone         = var.db["replica"]["availability_zone"]
   final_snapshot_identifier = "${local.name_identifier}-replica-snapshot"
   storage_encrypted         = true
+}
+
+resource "aws_secretsmanager_secret" "db_secrets" {
+  name = local.name_identifier
+  description = "Json map for Database ${local.name_identifier}"
+}
+
+resource "aws_secretsmanager_secret_version" "secrets_version" {
+  secret_id = aws_secretsmanager_secret.db_secrets.id
+  secret_string = jsonencode({
+    db_password          = module.db.this_db_instance_password
+    db_instance_username = module.db.this_db_instance_username
+    db_instance_address  = module.db.this_db_instance_address
+    db_instance_endpoint = module.db.this_db_instance_endpoint
+    db_instance_port     = module.db.this_db_instance_port
+    db_instance_name     = module.db.this_db_instance_name
+  })
 }

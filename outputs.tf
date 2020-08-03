@@ -9,6 +9,11 @@ output "db_instance_address" {
   description = "DB instance address"
 }
 
+output "db_instance_port" {
+  value = module.db.this_db_instance_port
+  description = "DB instance port"
+}
+
 output "db_instance_endpoint" {
   value       = module.db.this_db_instance_endpoint
   description = "DB instance endpoint"
