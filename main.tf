@@ -128,19 +128,28 @@ resource "aws_db_instance" "replica" {
   storage_encrypted         = true
 }
 
-resource "aws_secretsmanager_secret" "db_secrets" {
-  name = local.name_identifier
-  description = "Json map for Database ${local.name_identifier}"
+resource "aws_secretsmanager_secret" "db_secretmanager" {
+  for_each = {
+    "db_master_password" = "Database master password"
+    "db_master_user"     = "Database master user"
+    "db_address"         = "Database address"
+    "db_port"            = "Database port"
+    "db_endpoint"        = "Database address and port"
+  }
+  name        = "${local.name_identifier}-${each.key}"
+  description = "${each.value} for ${local.name_identifier}"
+  tags        = var.custom_tags
 }
 
-resource "aws_secretsmanager_secret_version" "secrets_version" {
-  secret_id = aws_secretsmanager_secret.db_secrets.id
-  secret_string = jsonencode({
-    db_password          = module.db.this_db_instance_password
-    db_instance_username = module.db.this_db_instance_username
-    db_instance_address  = module.db.this_db_instance_address
-    db_instance_endpoint = module.db.this_db_instance_endpoint
-    db_instance_port     = module.db.this_db_instance_port
-    db_instance_name     = module.db.this_db_instance_name
-  })
+resource "aws_secretsmanager_secret_version" "db_secret_version" {
+  depends_on = [ aws_secretsmanager_secret.db_secretmanager ]
+  for_each = {
+    "db_master_password" = module.db.this_db_instance_password
+    "db_master_user"     = module.db.this_db_instance_username
+    "db_address"         = module.db.this_db_instance_address
+    "db_port"            = module.db.this_db_instance_port
+    "db_endpoint"        = module.db.this_db_instance_endpoint
+  }
+  secret_id     = aws_secretsmanager_secret.db_secretmanager[each.key].id
+  secret_string = each.value
 }
