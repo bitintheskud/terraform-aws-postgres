@@ -153,3 +153,21 @@ resource "aws_secretsmanager_secret_version" "db_secret_version" {
   secret_id     = aws_secretsmanager_secret.db_secretmanager[each.key].id
   secret_string = each.value
 }
+
+resource "random_password" "random_password" {
+  count =  length(var.opt_users)
+  length = 10
+}
+
+resource "aws_secretsmanager_secret" "users_secretmanager" {
+  count = length(var.opt_users)
+  name = "${local.name_identifier}-user-${var.opt_users[count.index]}"
+  description = "User credential for ${var.opt_users[count.index]}"
+}
+
+resource "aws_secretsmanager_secret_version" "users_secretmanager_version" {
+  depends_on = [ random_password.random_password ]
+  count = length(var.opt_users)
+  secret_id = aws_secretsmanager_secret.users_secretmanager[count.index].id
+  secret_string = random_password.random_password[count.index].result
+}

@@ -49,3 +49,9 @@ variable "apply_immediately" {
   default = false
   description = "Specifies whether any database modifications are applied immediately, or during the next maintenance window"
 }
+
+variable "opt_users" {
+  type = list(string)
+  default = []
+  description = "Create password for the list of user and add them in secret manager"
+}
